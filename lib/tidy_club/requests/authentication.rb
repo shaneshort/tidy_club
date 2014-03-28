@@ -24,6 +24,7 @@ module TidyClub
 
       def get_uri
         "https://#{TidyClub.get_club_name}.tidyclub.com/oauth/token"
+
       end
 
     end

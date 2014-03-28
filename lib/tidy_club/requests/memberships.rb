@@ -1,8 +1,8 @@
 module TidyClub
   module Request
-    class Member < TidyClub::Request::BaseRequest
+    class Memberships < TidyClub::Request::BaseRequest
       def get_payload
-        false
+        nil
       end
     end
   end
