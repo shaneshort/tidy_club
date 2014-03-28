@@ -1,6 +1,6 @@
 # TidyClub
 
-TODO: Write a gem description
+This is a simple integration gem. It handles the authorisation of requests and provides some nice data structures in return
 
 ## Installation
 
@@ -18,11 +18,19 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+If you want to have authenticated access to your TidyClub, go to the Settings -> Applications section of your TidyClub
+and get the client ID and secret. You will need to provide these to the TidyClub gem in the setup call
+
+  TidyClub.setup(club_name, client_id, secret, user_name, password)
+
+You can then call the various classes to get the information you require
+
+e.g.
+	TidyClub::Members.all.each {|m| do_something m}
 
 ## Contributing
 
-1. Fork it ( http://github.com/<my-github-username>/tidy_club/fork )
+1. Fork it ( http://github.com/bluntelk/tidy_club/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
