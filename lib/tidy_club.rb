@@ -1,8 +1,8 @@
-require "tidy_club/version"
-require "tidy_club/member"
-require "tidy_club/requests/base_request"
-require "tidy_club/requests/authentication"
-require "tidy_club/requests/member"
+require 'tidy_club/version'
+require 'tidy_club/member'
+require 'tidy_club/requests/base_request'
+require 'tidy_club/requests/authentication'
+require 'tidy_club/requests/member'
 
 require 'logger'
 require 'json'
@@ -17,7 +17,7 @@ module TidyClub
   def self.setup(club_name, client_id, secret, user_name, password)
     @club_name = club_name
     @client_id = client_id
-    @secrect = secret
+    @secret = secret
     @user_name = user_name
     @password = password
     @logger = Logger.new STDOUT
@@ -28,10 +28,6 @@ module TidyClub
 
   def self.logger
     @logger
-  end
-
-  def self.get_club_url(club_name)
-    "https://#{club_name}.tidyclub.com/api/v1?"
   end
 
   def self.get_club_name
@@ -79,9 +75,7 @@ module TidyClub
           TidyClub.get_password
       )
 
-      uri = rq.get_uri
-
-      #Net::HTTP::Client
+      do_request rq
     end
 
     def do_request(rq)
@@ -91,15 +85,15 @@ module TidyClub
       https.use_ssl = true
 
       request = Net::HTTP::Post.new(uri.path)
-      request["Authorization"] = "Bearer #{@auth_token}" if @auth_token
+      request['Authorization'] = "Bearer #{@auth_token}" if @auth_token
 
       payload = rq.get_payload
 
       if payload.nil?
         request.set_form_data payload
-        TidyClub.logger.debug "Making a GET request"
+        TidyClub.logger.debug 'Making a GET request'
       else
-        TidyClub.logger.debug "Making a post request"
+        TidyClub.logger.debug 'Making a post request'
       end
 
       JSON.parse https.request(request)

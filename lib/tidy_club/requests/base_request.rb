@@ -6,8 +6,14 @@ module TidyClub
       end
 
       def get_uri
-        uri = TidyClub.get_club_url TidyClub.get_club_name
+        get_club_url TidyClub.get_club_name
       end
+
+      # returns the tidy club URL that we can use to make our API calls
+      def get_club_url(club_name)
+	      "https://#{club_name}.tidyclub.com/api/v1?"
+      end
+
     end
   end
 end
