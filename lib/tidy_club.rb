@@ -1,9 +1,11 @@
 require 'tidy_club/version'
 require 'tidy_club/base_object'
 require 'tidy_club/membership'
+require 'tidy_club/contact'
 require 'tidy_club/requests/base_request'
 require 'tidy_club/requests/authentication'
 require 'tidy_club/requests/memberships'
+require 'tidy_club/requests/contacts'
 
 require 'logger'
 require 'json'

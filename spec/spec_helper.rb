@@ -1,10 +1,10 @@
 require 'tidy_club'
 
-user='jason@jasonplayne.com'
+user=ENV['USERNAME']
 pass=ENV['PASSWORD']
 
-client_id='8528f3911f4abd2aa55c72e0aeb1c9606868b03d2820c38e6975ec1d981ccc4e'
-client_secret='e6a64c66caa4d88fcb66e96ac5db4ff9aecd89cc4a121d5a772ea290aa2e6a82'
+client_id=ENV['CLIENT_ID']
+client_secret=ENV['CLIENT_SECRET']
 
 TidyClub.setup 'wacan',client_id, client_secret, user, pass
 
