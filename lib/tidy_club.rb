@@ -1,5 +1,6 @@
 require 'tidy_club/version'
-require 'tidy_club/member'
+require 'tidy_club/base_object'
+require 'tidy_club/membership'
 require 'tidy_club/requests/base_request'
 require 'tidy_club/requests/authentication'
 require 'tidy_club/requests/memberships'
@@ -24,6 +25,7 @@ module TidyClub
     @user_name = user_name
     @password = password
     @logger = Logger.new STDOUT
+    @logger.progname = 'TidyClub'
 
     @api = TidyClub::Api.new
   end
@@ -93,17 +95,18 @@ module TidyClub
       https = Net::HTTP.new(uri.host, uri.port)
       https.use_ssl = true
 
-      request = Net::HTTP::Post.new(uri.path)
-      request['Authorization'] = "Bearer #{@auth_token}" if @auth_token
-
       payload = rq.get_payload
 
       if payload.nil?
+	      request = Net::HTTP::Get.new(uri.path)
         TidyClub.logger.debug "Making a GET request for #{rq.class} to #{uri}"
       else
+	      request = Net::HTTP::Post.new(uri.path)
 	      request.set_form_data payload
         TidyClub.logger.debug "Making a POST request for #{rq.class} to #{uri}"
       end
+
+	    request['Authorization'] = "Bearer #{@auth_token}" if @auth_token
 
 	    response = https.request(request)
 
@@ -112,6 +115,8 @@ module TidyClub
 	    if response.content_type != 'application/json'
 		    raise TidyClub::TidyClubApiCallBad, "Expecting a JSON response, got a response type of '#{response.content_type}' instead"
 	    end
+
+	    TidyClub.logger.info response.body
 
 	    if response.code.to_i == 200
 		    return JSON.parse response.body
