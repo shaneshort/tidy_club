@@ -1,10 +1,8 @@
 module TidyClub
-  class Group < ActiveResource::Base
+  class Group < TidyClub::Base
 
-    attr_accessor :id, :label, :description, :contacts_count, :logo_image
-                  :created_at
+    # :id, :label, :description, :contacts_count, :logo_image, :created_at
 
-    self.site = TidyClub.get_api_url
-    ActiveResource::Base.headers['Authorization'] = "Bearer #{TidyClub.get_access_token}"
+		has_many :contacts, :class_name => 'TidyClub::Contact'
   end
 end

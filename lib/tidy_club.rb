@@ -1,8 +1,4 @@
 require 'tidy_club/version'
-# require 'tidy_club/base_object'
-# require 'tidy_club/membership'
-# require 'tidy_club/contact'
-# require 'tidy_club/group'
 
 require 'logger'
 require 'tmpdir'
@@ -27,10 +23,13 @@ module TidyClub
 		@logger          = Logger.new STDOUT
 		@logger.progname = 'TidyClub'
 
+		require 'tidy_club/base'
+		require 'tidy_club/club'
 		require 'tidy_club/contact'
 		require 'tidy_club/email'
 		require 'tidy_club/group'
 		require 'tidy_club/membership'
+		require 'tidy_club/meeting'
 	end
 
 	## below here are internal functions

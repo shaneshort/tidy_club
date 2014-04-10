@@ -26,7 +26,10 @@ and get the client ID and secret. You will need to provide these to the TidyClub
 You can then call the various classes to get the information you require
 
 e.g.
-	TidyClub::Members.all.each {|m| do_something m}
+	TidyClub::Member.all.each {|m| do_something m}
+
+Note:
+	You cannot call any classes until after setup is done
 
 ## Contributing
 
