@@ -1,19 +1,10 @@
 module TidyClub
-  class Group < BaseObject
+  class Group < ActiveResource::Base
 
     attr_accessor :id, :label, :description, :contacts_count, :logo_image
                   :created_at
 
-    # returns a list of all members that are in tidy club
-    # @param [Boolean] search Terms to search for
-    def self.all(search = '')
-      ret = []
-      rq = TidyClub::Request::Groups.new
-      rq.add_parameter('search_terms', search) unless search == ''
-      TidyClub.get_api.make_request(rq).each do |row|
-        ret << Group.new(row)
-      end
-      ret
-    end
+    self.site = TidyClub.get_api_url
+    ActiveResource::Base.headers['Authorization'] = "Bearer #{TidyClub.get_access_token}"
   end
 end

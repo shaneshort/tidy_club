@@ -1,23 +1,12 @@
 module TidyClub
-  class Contact < BaseObject
+  class Contact < ActiveResource::Base
 
     attr_accessor :id, :first_name, :last_name, :nick_name, :company, :email_address, :phone_number,
                   :address1, :city, :state, :country, :post_code,
                   :gender, :birthday, :facebook, :twitter, :details, :profile_image,
                   :created_at
 
-    # returns a list of all members that are in tidy club
-    # @param [Boolean] search Terms to search for
-    # @param [Boolean] registered_only Whether or not to show only registered contacts
-    def self.all(search = '', registered_only = false)
-      ret = []
-      rq = TidyClub::Request::Contacts.new
-      rq.add_parameter('search_terms', search) unless search == ''
-      rq.add_parameter('registered', true) if registered_only
-      TidyClub.get_api.make_request(rq).each do |row|
-        ret << Contact.new(row)
-      end
-      ret
-    end
+    self.site = TidyClub.get_api_url
+    ActiveResource::Base.headers['Authorization'] = "Bearer #{TidyClub.get_access_token}"
   end
 end
