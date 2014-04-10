@@ -24,12 +24,24 @@ module TidyClub
 		@logger.progname = 'TidyClub'
 
 		require 'tidy_club/base'
+		require 'tidy_club/category'
 		require 'tidy_club/club'
-		require 'tidy_club/contact'
-		require 'tidy_club/email'
-		require 'tidy_club/group'
+		require 'tidy_club/task'
 		require 'tidy_club/membership'
+		require 'tidy_club/contact'
+		require 'tidy_club/deposit'
+		require 'tidy_club/email'
+		require 'tidy_club/ticket'
+		require 'tidy_club/payment'
+		require 'tidy_club/event_payment'
+		require 'tidy_club/event'
+		require 'tidy_club/expense'
+		require 'tidy_club/group'
+		require 'tidy_club/invoice'
 		require 'tidy_club/meeting'
+		require 'tidy_club/membership_level'
+		require 'tidy_club/user'
+
 	end
 
 	## below here are internal functions
