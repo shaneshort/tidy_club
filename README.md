@@ -6,7 +6,7 @@ This is a simple integration gem. It handles the authorisation of requests and p
 
 Add this line to your application's Gemfile:
 
-    gem 'tidy_club'
+    gem 'tidy_club', git: 'github.com/bluntelk/tidy_club'
 
 And then execute:
 
@@ -21,15 +21,45 @@ Or install it yourself as:
 If you want to have authenticated access to your TidyClub, go to the Settings -> Applications section of your TidyClub
 and get the client ID and secret. You will need to provide these to the TidyClub gem in the setup call
 
-  TidyClub.setup(club_name, client_id, secret, user_name, password)
+	options = {club_name:'club-domain', client_id:'...', client_secret:'...',user_name:'...', password:'...'}
+	client = TidyClub::Client.new(options)
+
+or
+
+	client = TidyClub::Client.new do |client|
+		client.club_name = 'club-domain'
+		client.client_id = '...'
+		client.client_secret = '...'
+		client.user_name = '...', password:'...'
+	end
+
+There is a Logger instance that is used, you can configure the amount of output with
+
+	TidyClub.set_logger_level Logger::Severity::DEBUG
 
 You can then call the various classes to get the information you require
 
-e.g.
-	TidyClub::Member.all.each {|m| do_something m}
+	client.contact.all.each {|contact| ...}
 
-Note:
-	You cannot call any classes until after setup is done
+The following API endpoints are available
+
+	client.category
+	client.club # singleton - use .find to get the data back
+	client.contact
+	client.deposit
+	client.email
+	client.event
+	client.event.tickets
+	client.event.payments
+	client.expense
+	client.group
+	client.invoice
+	client.meeting
+	client.membership
+	client.membership_levels
+	client.task
+	client.ticket
+	client.user # create only
 
 ## Contributing
 
