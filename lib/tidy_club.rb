@@ -7,22 +7,26 @@ require 'uri'
 require 'net/https'
 
 module TidyClub
+
+	@logger_level = Logger::Severity::WARN
+
 	# Call this function to first setup any privileged access you may have
 	# @param [String] club_name The name of your club
 	# @param [String] client_id The Client ID fetched from Tidyclub -> Settings -> Applications
 	# @param [String] secret The secret fetched from Tidyclub -> Settings -> Applications
 	# @param [String] user_name Your login to TidyClub
 	# @param [String] password Your Password to TidyClub
-	# @return [TidyClub::Api] You do not really need this, but it is there just in case
 	def self.setup(club_name, client_id, secret, user_name, password)
 		@club_name       = club_name
 		@client_id       = client_id
 		@secret          = secret
 		@user_name       = user_name
 		@password        = password
-		@logger          = Logger.new STDOUT
+		@logger          = Logger.new STDERR
 		@logger.progname = 'TidyClub'
+		@logger.level    = @logger_level
 
+		@logger.debug 'Requiring end points'
 		require 'tidy_club/base'
 		require 'tidy_club/category'
 		require 'tidy_club/club'
@@ -42,95 +46,139 @@ module TidyClub
 		require 'tidy_club/membership_level'
 		require 'tidy_club/user'
 
+		set_auth_header get_access_token
+
+		nil
 	end
 
-	## below here are internal functions
 
+	# returns the logger that is common to all of our logging
+	# @return [Logger] our common logger object
 	def self.logger
 		@logger
 	end
 
-	def self.get_club_name
-		@club_name
+	# allows a user to set the debug output level on the in built logger
+	# @param [int] level one of the Logger::Severity levels
+	def self.set_logger_level(level)
+		@logger_level = level
+		@logger.level = level unless @logger.nil?
 	end
 
-	def self.get_client_id
-		@client_id
-	end
 
-	def self.get_client_secret
-		@secret
-	end
 
-	def self.get_user_name
-		@user_name
-	end
-
-	def self.get_password
-		@password
-	end
-
-	def self.get_api
-		@api
-	end
-
+	# helper func to return the url of the API for the given club
+	# @return [String]
 	def self.get_api_url
 		"https://#{@club_name}.tidyclub.com/api/v1/"
 	end
 
+
+	# Nukes the existing authentication token and performs the authentication step again
+	def self.reauthenticate
+		nuke_auth_token
+		set_auth_header get_access_token
+	end
+
+
+	private
+
+	# Nuke the existing authentication token from orbit.
+	# Use only if you have a stale/invalid auth token.
+	# i.e. You are getting 4xx HTTP errors - ActiveResource::UnauthorizedAccess
+	def self.nuke_auth_token
+		file = get_access_token_file
+		@logger.info "Removing persisted access token: #{file}"
+		File.delete file
+		set_access_token(nil)
+		set_auth_header ''
+	end
+
+	# puts our authentication token in the request header
+	# @param [String] The auth token
+	def self.set_auth_header(token)
+		ActiveResource::Base.headers['Authorization'] = "Bearer #{token}"
+		nil
+	end
+
+	# helper func that gives us the file name of the persistent access token store
+	# @return [String]
 	def self.get_access_token_file
 		sprintf('%s/%s-tidyclub-oauth-token', Dir.tmpdir, @club_name)
 	end
 
+	# sets the access token to use, writes it to disk
+	# @param [String] token The access token
 	def self.set_access_token(token)
+		@logger.info "Setting access token to #{token}"
 		@access_token = token
-		File.write(TidyClub.get_access_token_file, @access_token)
+		File.write(get_access_token_file, @access_token) unless (@access_token.nil? || @access_token == '')
+		nil
 	end
 
+	# gets the access token for communicating with the API
+	# @return [String]
 	def self.get_access_token
 		if @access_token.nil?
 			# do we have it cached on disk?
-			tmp_file = TidyClub.get_access_token_file
+			tmp_file = get_access_token_file
 
 			if File.exist? tmp_file
-				TidyClub.set_access_token(File.read(tmp_file).strip)
+				@logger.info 'Fetching cached auth token from disk'
+				set_access_token(File.read(tmp_file).strip)
 			end
 		end
 
 		# try again, get a fresh token
 		if @access_token.nil?
-			TidyClub.logger.debug 'Fetching a fresh token'
-			uri           = URI("https://#{TidyClub.get_club_name}.tidyclub.com/oauth/token")
+			uri = URI("https://#{@club_name}.tidyclub.com/oauth/token")
+			@logger.info "Fetching a fresh token from #{uri}"
 			https         = Net::HTTP.new(uri.host, uri.port)
 			https.use_ssl = true
 			payload       = {
-					client_id:     TidyClub.get_client_id,
-					client_secret: TidyClub.get_client_secret,
-					username:      TidyClub.get_user_name,
+					client_id:     @client_id,
+					client_secret: @secret,
+					username:      @user_name,
 					password:      @password,
 					grant_type:    'password'
 			}
 			request       = Net::HTTP::Post.new(uri.path)
+
 			request.set_form_data payload
 			response = https.request(request)
+
 			if response.content_type != 'application/json'
-				raise TidyClub::TidyClubApiCallBad, "Expecting a JSON response, got a response type of '#{response.content_type}' instead"
+				msg = "Expecting a JSON response, got a response type of '#{response.content_type}' instead"
+				@logger.error msg
+				raise TidyClub::ApiCallBad, msg
 			end
 
 			if response.code.to_i == 200
 				r = JSON.parse response.body
-				TidyClub.set_access_token r[:access_token]
+				set_access_token r['access_token']
 			else
-				raise TidyClub::TidyClubApiCallBad, "Authentication Failed - response code was: #{response.code} - #{response.message}"
+				msg = "Authentication Failed - response code was: #{response.code} - #{response.message}"
+				@logger.error msg
+				raise TidyClub::ApiCallBad, msg
 			end
 		end
+		@access_token = nil if @access_token == ''
 
+		if @access_token.nil?
+			msg = 'There is no valid access token'
+			@logger.error msg
+			raise AuthenticationError, msg
+		end
 
 		@access_token
 	end
 
 
-	class TidyClubApiCallBad < Exception
+	class AuthenticationError < Exception
+
+	end
+
+	class ApiCallBad < Exception
 
 	end
 
