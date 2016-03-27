@@ -68,7 +68,7 @@ module TidyClub
 		# helper func to return the url of the API for the given club
 		# @return [String]
 		def get_api_url
-			"https://#{club_name}.tidyclub.com/api/v1/"
+			"https://#{club_name}.tidyhq.com/api/v1/"
 		end
 
 
